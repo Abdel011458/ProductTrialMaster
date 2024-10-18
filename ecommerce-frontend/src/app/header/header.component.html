@@ -1,0 +1,15 @@
+<header>
+  <div class="menu-container">
+    <nav>
+      <a routerLink="/">Accueil</a>
+      <a routerLink="/products">Produits</a>
+      <a routerLink="/contact">Contact</a>
+    </nav>
+
+    <div class="cart-icon">
+      <mat-icon>shopping_cart</mat-icon>
+      <span class="cart-badge">{{ cartItemCount }}</span>
+      <a routerLink="/cart" class="cart-text">Panier</a>
+    </div>
+  </div>
+</header>

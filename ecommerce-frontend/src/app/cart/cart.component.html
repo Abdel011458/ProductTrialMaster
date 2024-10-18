@@ -1,0 +1,17 @@
+<div *ngIf="items.length > 0; else emptyCart">
+  <div *ngFor="let item of items" class="cart-item" [@cartItemAnimation]>
+    <img [src]="item.image" alt="{{ item.name }}" />
+    <h2>{{ item.name }}</h2>
+    <p>Prix : {{ item.price }} €</p>
+    <input type="number" [(ngModel)]="item.quantity" min="1" (change)="updateQuantity(item)" />
+    <button (click)="removeFromCart(item)">Supprimer</button>
+  </div>
+
+  <hr />
+  <h3>Total : {{ total | currency }}</h3>
+
+</div>
+
+<ng-template #emptyCart>
+  <p>Votre panier est vide.</p>
+</ng-template>
