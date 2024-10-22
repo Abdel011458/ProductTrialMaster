@@ -2,7 +2,7 @@
   <div *ngFor="let item of items" class="cart-item" [@cartItemAnimation]>
     <img [src]="item.image" alt="{{ item.name }}" />
     <h2>{{ item.name }}</h2>
-    <p>Prix : {{ item.price }} €</p>
+    <p>Prix : {{ item.price }} $</p>
     <input type="number" [(ngModel)]="item.quantity" min="1" (change)="updateQuantity(item)" />
     <button (click)="removeFromCart(item)">Supprimer</button>
   </div>

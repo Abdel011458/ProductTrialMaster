@@ -3,6 +3,7 @@ package com.alten.ecommerce.web;
 import com.alten.ecommerce.entities.Product;
 import com.alten.ecommerce.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,5 +52,12 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Import a list of products
+    @PostMapping("/import")
+    public ResponseEntity<String> importProducts(@RequestBody List<Product> products) {
+        productService.saveAll(products);
+        return new ResponseEntity<>("Produits importés avec succès", HttpStatus.OK);
     }
 }

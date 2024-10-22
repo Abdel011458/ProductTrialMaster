@@ -23,15 +23,17 @@ export class ProductDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const productId = Number(this.route.snapshot.paramMap.get('id'));
-    this.productService.getProductById(productId).subscribe(
-      (data) => {
-        this.product = data; // Assignez la réponse à la propriété 'product'
-      },
-      (error) => {
-        console.error('Erreur lors de la récupération du produit', error);
-      }
-    );
+    const productId = this.route.snapshot.paramMap.get('id');
+    if (productId) {
+      this.productService.getProductById(+productId).subscribe(
+        (data: Product) => {
+          this.product = data;
+        },
+        (error) => {
+          console.error('Erreur lors de la récupération du produit', error);
+        }
+      );
+    }
   }
 
   addToCart(product: Product | undefined): void {

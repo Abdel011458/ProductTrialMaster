@@ -8,7 +8,7 @@ import {FormsModule, NgModel} from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import {provideAnimations} from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientModule, provideHttpClient, withFetch} from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(), provideAnimationsAsync(),
     MatIconModule,
     NgModel,
-    HttpClientModule
+    provideHttpClient(withFetch())
   ]
 };
