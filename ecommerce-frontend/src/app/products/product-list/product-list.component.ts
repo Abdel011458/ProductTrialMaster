@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { Product } from '../product.model';
 import {CartService} from '../../services/cart.service';
 import {FormsModule} from '@angular/forms';
@@ -8,10 +8,12 @@ import {animate, style, transition, trigger} from '@angular/animations';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {RouterModule} from '@angular/router';
 import {MatIcon} from '@angular/material/icon';
+import {ProductService} from '../../services/product.service';
+import {HttpClientModule} from '@angular/common/http';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatCardModule, RouterModule, MatIcon],
+  imports: [FormsModule, CommonModule, MatCardModule, RouterModule, MatIcon, HttpClientModule  ],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css',
   animations: [
@@ -23,64 +25,76 @@ import {MatIcon} from '@angular/material/icon';
     ])
   ]
 })
-export class ProductListComponent {
-  products: Product[] = [
-    { id: 1, name: 'Smartphone XYZ', description: 'Un smartphone dernier cri avec une caméra haute résolution et une batterie longue durée.', price: 299.99, quantity: 50, image: 'https://picsum.photos/200/300?random=1' },
-    { id: 2, name: 'Ordinateur Portable ABC', description: 'Un ordinateur portable puissant avec processeur Intel Core i7, 16 Go de RAM et SSD 512 Go.', price: 899.99, quantity: 20, image: 'https://picsum.photos/200/300?random=2' },
-    { id: 3, name: 'Casque Bluetooth Xtreme', description: 'Un casque Bluetooth avec suppression active du bruit pour une expérience sonore immersive.', price: 129.99, quantity: 75, image: 'https://picsum.photos/200/300?random=3' },
-    { id: 4, name: 'Montre Connectée Pro', description: 'Une montre connectée avec suivi de la santé, GPS intégré et affichage AMOLED.', price: 199.99, quantity: 35, image: 'https://picsum.photos/200/300?random=4' },
-    { id: 5, name: 'Tablette 10 pouces', description: 'Une tablette polyvalente avec écran de 10 pouces et support pour le stylet.', price: 249.99, quantity: 12, image: 'https://picsum.photos/200/300?random=5' },
-    { id: 6, name: 'Enceinte Bluetooth Super Bass', description: 'Une enceinte Bluetooth portable avec un son puissant et des basses profondes.', price: 79.99, quantity: 40, image: 'https://picsum.photos/200/300?random=6' },
-    { id: 7, name: 'Appareil Photo Numérique', description: 'Un appareil photo compact avec un zoom optique 10x et un capteur de 20 MP.', price: 549.99, quantity: 8, image: 'https://picsum.photos/200/300?random=7' },
-    { id: 8, name: 'Imprimante Jet d\'Encre', description: 'Une imprimante jet d\'encre avec impression recto verso et connexion Wi-Fi.', price: 119.99, quantity: 15, image: 'https://picsum.photos/200/300?random=8' },
-    { id: 9, name: 'Clavier Mécanique RGB', description: 'Un clavier mécanique avec rétroéclairage RGB personnalisable et touches programmables.', price: 99.99, quantity: 55, image: 'https://picsum.photos/200/300?random=9' },
-    { id: 10, name: 'Souris Gaming', description: 'Une souris gaming ergonomique avec capteur haute précision et boutons personnalisables.', price: 59.99, quantity: 100, image: 'https://picsum.photos/200/300?random=10' },
-    { id: 11, name: 'Tapis de Souris XXL', description: 'Un tapis de souris grand format avec surface lisse et base antidérapante.', price: 29.99, quantity: 200, image: 'https://picsum.photos/200/300?random=11' },
-    { id: 12, name: 'Batterie Externe 20,000mAh', description: 'Une batterie externe avec deux ports USB et charge rapide.', price: 49.99, quantity: 60, image: 'https://picsum.photos/200/300?random=12' }
-  ];
+export class ProductListComponent implements OnInit{
+  products: Product[] = [];
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 5;
+  itemsPerPage = 8; // Afficher 8 produits par page
 
   // Filtrage
   searchTerm: string = '';
-  constructor(private cartService: CartService, private snackBar: MatSnackBar) {}
+  totalPages: number = 1; // Total des pages
+  constructor(private cartService: CartService, private snackBar: MatSnackBar, private productService: ProductService) {}
 
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (data: Product[]) => {
+        this.products = data;
+        this.updateTotalPages(); // Mettre à jour le nombre total de pages
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des produits', err);
+      }
+    });
+  }
+
+  // Méthode pour mettre à jour le nombre total de pages
+  updateTotalPages(): void {
+    this.totalPages = Math.ceil(this.products.length / this.itemsPerPage);
+  }
   addToCart(product: Product | undefined) {
     if (product) {
       this.cartService.addToCart(product);
       console.log(`${product.name} a été ajouté au panier`);
       this.snackBar.open(`${product.name} a été ajouté au panier.`, 'Fermer', { // Afficher le toast pour l'ajout
         duration: 3000,
-        horizontalPosition: 'right',
+        horizontalPosition: 'center',
         verticalPosition: 'top',
         panelClass: ['add-snackbar']
       });
     }
   }
 
-  // Obtenir les produits pour la page actuelle
+  // Filtrer et paginer les produits
   get paginatedProducts(): Product[] {
-    const filteredProducts = this.products.filter(product =>
+    const filteredProducts = this.products.filter((product) =>
       product.name.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
+    this.totalPages = Math.ceil(filteredProducts.length / this.itemsPerPage); // Mettre à jour le nombre total de pages après filtrage
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return filteredProducts.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
+
   // Changer de page
   changePage(page: number) {
-    this.currentPage = page;
+    if (page > 0 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
   }
 
   // Calculer le nombre total de pages
-  get totalPages(): number {
-    const filteredProducts = this.products.filter(product =>
-      product.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
-    return Math.ceil(filteredProducts.length / this.itemsPerPage);
-  }
+  // get totalPages(): number {
+  //   const filteredProducts = this.products.filter(product =>
+  //     product.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+  //   );
+  //   return Math.ceil(filteredProducts.length / this.itemsPerPage);
+  // }
 
   // Supprimer du panier (appelle removeFromCart de CartService)
   removeFromCart(product: Product| undefined) {
@@ -89,10 +103,11 @@ export class ProductListComponent {
       console.log(`${product.name} a été retiré du panier`);
       this.snackBar.open(`${product.name} a été retiré du panier.`, 'Fermer', { // Afficher le toast pour le retrait
         duration: 3000,
-        horizontalPosition: 'right',
+        horizontalPosition: 'center',
         verticalPosition: 'top',
         panelClass: ['remove-snackbar']
       });
     }
   }
+
 }
